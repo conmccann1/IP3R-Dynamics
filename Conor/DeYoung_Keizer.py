@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.integrate import odeint
 from scipy.optimize import fsolve
-plt.close('all')
+#plt.close('all')
 
 """ Parameters """
 #Binding affinities
@@ -98,6 +98,7 @@ def sys(x,t,p):
     
     if t > 110 and t < 110.5:
         f = 1
+        print(t)
     elif t > 60 and t < 60.5:
         f = 1
     elif t > 40 and t < 40.5:
@@ -105,17 +106,17 @@ def sys(x,t,p):
     else:
         f = 0
 
-
         
     ds0 = -a[0]*I*s0 + b[0]*s2 - a[3]*c*s0 + b[3]*s1 - a[4]*c*s0 + b[4]*v0
     ds1 =  a[3]*c*s0 - b[3]*s1 - a[2]*I*s1 + b[2]*s3 - a[4]*c*s1 + b[4]*v1
-    ds2 =  a[0]*I*s0 - b[0]*s2 - a[1]*c*s2 + b[1]*s3 - a[4]*c*s2 + b[4]*v2
-    ds3 =  a[1]*c*s2 - b[1]*s3 + a[2]*I*s1 - b[2]*s3 - a[4]*c*s3 + b[4]*v3
-
     dv0 = -a[0]*I*v0 + b[0]*v2 - a[3]*c*v0 + b[3]*v1 + a[4]*c*s0 - b[4]*v0
     dv1 =  a[3]*c*v0 - b[3]*v1 - a[2]*I*v1 + b[2]*v3 + a[4]*c*s1 - b[4]*v1
+
+    ds2 =  a[0]*I*s0 - b[0]*s2 - a[1]*c*s2 + b[1]*s3 - a[4]*c*s2 + b[4]*v2
+    ds3 =  a[1]*c*s2 - b[1]*s3 + a[2]*I*s1 - b[2]*s3 - a[4]*c*s3 + b[4]*v3
     dv2 =  a[0]*I*v0 - b[0]*v2 - a[1]*c*v2 + b[1]*v3 + a[4]*c*s2 - b[4]*v2
     dv3 =  a[1]*c*v2 - b[1]*v3 + a[2]*I*v1 - b[2]*v3 + a[4]*c*s3 - b[4]*v3
+    
     
     cER = (c0-c)/c1
     dc = J1(v2,cER,c) - J2(c) 
@@ -131,44 +132,45 @@ def sys(x,t,p):
 ###parameter changes
 Istar = 0.24
 
-t = np.arange(0,250,0.0001)
+t = np.arange(0,100,0.0001)
            #ds0, ds1,ds2,ds3,dv0,dv1,dv2,dv3,dc,dI
-y0 = np.array([0.5,0,0,0,0.5,0,0,0,0.125,0.24])
-p = 1
+y0 = np.array([0.125,0.125,0.125,0.125,0.125,0.125,0.125,0.125,0.2,0.4])
+p = 0
 y = odeint(sys,y0,t,args=(p,))
-# plt.figure()
-plt.plot(t,y[:,-1])
-plt.ylabel('[IP3]')
 plt.figure()
-plt.plot(t,y[:,-2])
+#plt.plot(t,y[:,-1])
+#plt.ylabel('[IP3]')
+#plt.figure()
+plt.plot(t,y[:,-2],'--')
 plt.ylabel('[Ca2+]')
 plt.xlabel('time')
-plt.figure()
-plt.plot(t,y[:,-4])
-plt.ylabel('x110')
-plt.xlabel('time')
+#plt.figure()
+plt.plot(t,y[:,0]+y[:,2]+y[:,4]+y[:,-4],'--')
+#plt.ylabel('x110')
+#plt.xlabel('time')
 
 
 
 """ Hopf Bifurcation """
-#Istar = 0.25
-#plt.figure()
-#t = np.arange(0,80,0.001)
-#y0 = np.array([0.5,0,0,0,0.5,0,0,0,0.125,0])
-#
-#Irng = np.arange(0,0.9,0.001)
-#p = 0
-#for i in np.arange(0,len(Irng),1):
-#    y0[-1] = Irng[i]
-#    y = odeint(sys,y0,t,args=(p,))
-#  
-#    lasts = y[-20000:,-2]
-#    
-#    print(i)
-#    x = np.repeat(Irng[i],len(lasts))
-#    
-#    plt.plot(x,lasts,'x')
-#    plt.xlabel('[IP3]'), plt.ylabel('[Ca2+]')
+Istar = 0.25
+plt.figure()
+t = np.arange(0,80,0.001)
+y0 = np.array([0.5,0,0,0,0.5,0,0,0,0.125,0])
+
+Irng = np.arange(0,0.9,0.001)
+p = 0
+for i in np.arange(0,len(Irng),1):
+    y0[-1] = Irng[i]
+    y = odeint(sys,y0,t,args=(p,))
+  
+    lasts = y[-20000:,-2]
+    
+    print(i)
+    x = np.repeat(Irng[i],1)
+    
+    plt.plot(x,np.amax(lasts),'bo')
+    plt.plot(x,np.amin(lasts),'bo')
+    plt.xlabel('[IP3]'), plt.ylabel('[Ca2+]')
 
 """ x0ik vs x1ik """
 #plt.close('all')
